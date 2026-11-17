@@ -27,8 +27,14 @@ use Illuminate\Support\Carbon;
  * @property int $estimate_min_nanos
  * @property int $estimate_max_nanos
  * @property array{input_text_tokens: string, input_image_tokens: string, output_tokens: string, reasoning_tokens: string}|null $rates
+ * @property array{input_text_tokens: int, input_image_tokens: int, output_tokens: int, reasoning_tokens: int}|null $usage
+ * @property int|null $cost_nanos
+ * @property int|null $charge_nanos
+ * @property string|null $image_url
+ * @property Carbon|null $image_url_expires_at
  * @property string|null $error_code
  * @property string|null $error_message
+ * @property Carbon|null $completed_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -66,6 +72,11 @@ final class Generation extends Model
             'estimate_min_nanos' => 'integer',
             'estimate_max_nanos' => 'integer',
             'rates' => 'array',
+            'usage' => 'array',
+            'cost_nanos' => 'integer',
+            'charge_nanos' => 'integer',
+            'image_url_expires_at' => 'datetime',
+            'completed_at' => 'datetime',
         ];
     }
 }

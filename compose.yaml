@@ -38,6 +38,8 @@ services:
     app:
         <<: *php
         command: php artisan serve --host=0.0.0.0 --port=8000
+        environment:
+            PHP_CLI_SERVER_WORKERS: 4 # so a webhook never waits behind a page load
         ports:
             - '${APP_PORT:-8000}:8000'
         depends_on: &ready
@@ -48,6 +50,20 @@ services:
         <<: *php
         command: php artisan queue:listen --queue=pixelforge,default --timeout=0
         depends_on: *ready
+
+    scheduler:
+        <<: *php
+        command: php artisan schedule:work
+        depends_on: *ready
+
+    # Public URL for Pixelforge webhooks: `docker compose logs tunnel` shows
+    # https://….trycloudflare.com. It changes on every restart; set
+    # <url>/webhooks/pixelforge on the local key in the Pixelforge dashboard.
+    tunnel:
+        image: cloudflare/cloudflared:2025.11.1
+        command: tunnel --no-autoupdate --url http://app:8000
+        depends_on:
+            - app
 
     vite:
         <<: *php

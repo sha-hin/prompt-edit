@@ -7,11 +7,13 @@ use App\Models\Generation;
 use App\Pixelforge\PixelforgeClient;
 use App\Pixelforge\PixelforgeException;
 use DateTimeInterface;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Attributes\MaxExceptions;
 use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\UniqueFor;
 use Throwable;
 
 /**
@@ -20,13 +22,22 @@ use Throwable;
  */
 #[MaxExceptions(3)] // network errors and timeouts; releases don't count
 #[Timeout(30)]
-final class SubmitGeneration implements ShouldQueueAfterCommit
+#[UniqueFor(660)] // retryUntil plus a minute; a lost job unblocks after this
+final class SubmitGeneration implements ShouldBeUnique, ShouldQueueAfterCommit
 {
     use Queueable;
 
     public function __construct(public Generation $generation)
     {
         $this->onQueue('pixelforge');
+    }
+
+    /**
+     * One job per generation: the sweep re-dispatching a pending one is a no-op while this one waits out a Retry-After.
+     */
+    public function uniqueId(): string
+    {
+        return $this->generation->id;
     }
 
     public function handle(PixelforgeClient $pixelforge): void

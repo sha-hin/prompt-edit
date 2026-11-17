@@ -14,6 +14,7 @@ final readonly class PixelforgeGeneration
 
     /**
      * @param  array{input_text_tokens: string, input_image_tokens: string, output_tokens: string, reasoning_tokens: string}  $rates
+     * @param  array<string, string>  $metadata
      */
     public function __construct(
         public string $id,
@@ -24,6 +25,8 @@ final readonly class PixelforgeGeneration
         public ?CarbonImmutable $imageUrlExpiresAt,
         public ?string $errorCode,
         public ?string $errorMessage,
+        public array $metadata = [],
+        public ?CarbonImmutable $completedAt = null,
     ) {}
 
     /**
@@ -41,10 +44,17 @@ final readonly class PixelforgeGeneration
             rates: self::rates($json['rates'] ?? null),
             usage: self::usage($json['usage'] ?? null),
             imageUrl: self::stringOrNull($json['image_url'] ?? null),
-            imageUrlExpiresAt: is_string($json['image_url_expires_at'] ?? null) ? CarbonImmutable::parse($json['image_url_expires_at']) : null,
+            imageUrlExpiresAt: self::dateOrNull($json['image_url_expires_at'] ?? null),
             errorCode: self::stringOrNull($json['error']['code'] ?? null),
             errorMessage: self::stringOrNull($json['error']['message'] ?? null),
+            metadata: array_filter(is_array($json['metadata'] ?? null) ? $json['metadata'] : [], is_string(...)),
+            completedAt: self::dateOrNull($json['completed_at'] ?? null),
         );
+    }
+
+    private static function dateOrNull(mixed $value): ?CarbonImmutable
+    {
+        return is_string($value) ? CarbonImmutable::parse($value) : null;
     }
 
     /**
