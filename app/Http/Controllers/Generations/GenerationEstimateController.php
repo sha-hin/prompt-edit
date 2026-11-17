@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Generations;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use App\Http\Requests\Generations\EstimateGenerationRequest;
+use App\Http\Resources\CostEstimateResource;
+use App\Pricing\GenerationEstimator;
+use App\Pricing\Rates;
 
 final class GenerationEstimateController extends Controller
 {
     /**
      * Estimate the price range for the form's current values, before submitting.
      */
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(EstimateGenerationRequest $request, GenerationEstimator $estimator, Rates $rates): CostEstimateResource
     {
-        abort(HttpResponse::HTTP_NOT_IMPLEMENTED); // Pricing calculator comes in a later step
+        return new CostEstimateResource($estimator->estimate($request->spec(), $rates));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Pricing\Rates;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -16,7 +17,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(function (): Rates {
+            /** @var array{input_text_tokens: string, input_image_tokens: string, output_tokens: string, reasoning_tokens: string} $rates */
+            $rates = config('services.pixelforge.rates');
+
+            return Rates::fromPerMillion($rates);
+        });
     }
 
     /**
