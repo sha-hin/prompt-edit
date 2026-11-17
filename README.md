@@ -71,33 +71,33 @@ The live app runs on [Laravel Cloud](https://cloud.laravel.com), built straight 
 1. **App:** PHP 8.4, Node 22, repository `sha-hin/prompt-edit`, branch `main`.
 2. **Database:** Laravel MySQL. The reports use MySQL date and window functions, so don't pick Postgres. Cloud fills in the `DB_*` variables.
 3. **Build commands:**
-   ```bash
-   composer install --no-dev --optimize-autoloader
-   npm ci && npm run build
-   ```
+    ```bash
+    composer install --no-dev --optimize-autoloader
+    npm ci && npm run build
+    ```
 4. **Deploy commands** (seeding only creates or resets the demo accounts, so it is safe on every deploy):
-   ```bash
-   php artisan migrate --force
-   php artisan db:seed --force
-   ```
+    ```bash
+    php artisan migrate --force
+    php artisan db:seed --force
+    ```
 5. **Scheduler:** on. It runs `generations:sweep` every minute, which catches generations whose webhook never arrived.
 6. **Background process:** `php artisan queue:work --queue=pixelforge,default --max-time=3600`.
 7. **Hibernation:** off, or webhooks, the worker and the sweep stop while the app sleeps.
 8. **Environment** (`APP_KEY` and `DB_*` come from Cloud):
-   ```dotenv
-   APP_ENV=production
-   APP_DEBUG=false
-   APP_URL=https://<app>.laravel.cloud
-   QUEUE_CONNECTION=database
-   CACHE_STORE=database
-   SESSION_DRIVER=database
-   INERTIA_SSR_ENABLED=false
-   DEMO_ACCOUNTS=true
-   AUTH_VERIFY_EMAIL=false        # no mail is set up, so new accounts start verified
-   PIXELFORGE_BASE_URL=https://pixelforge.promptedit.dev/v1
-   PIXELFORGE_API_KEY=            # a key made only for production
-   PIXELFORGE_WEBHOOK_SECRET=     # that key's signing secret
-   ```
+    ```dotenv
+    APP_ENV=production
+    APP_DEBUG=false
+    APP_URL=https://<app>.laravel.cloud
+    QUEUE_CONNECTION=database
+    CACHE_STORE=database
+    SESSION_DRIVER=database
+    INERTIA_SSR_ENABLED=false
+    DEMO_ACCOUNTS=true
+    AUTH_VERIFY_EMAIL=false        # no mail is set up, so new accounts start verified
+    PIXELFORGE_BASE_URL=https://pixelforge.promptedit.dev/v1
+    PIXELFORGE_API_KEY=            # a key made only for production
+    PIXELFORGE_WEBHOOK_SECRET=     # that key's signing secret
+    ```
 9. **Pixelforge:** create a separate API key for production, so its `/v1/usage` holds only the live app's generations and the admin Overview matches it exactly. Set that key's webhook URL to `https://<app>.laravel.cloud/webhooks/pixelforge` and send a test event; it should get `200 {"received": true}`.
 
 ## Checks

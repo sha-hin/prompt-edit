@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\Finder\Finder;
 
 arch('debugging calls never reach production')
@@ -13,7 +14,7 @@ arch('env() is read in config files only')                       // under config
 
 arch('controllers only speak HTTP: no queries, no transactions')
     ->expect('App\Http\Controllers')
-    ->not->toUse('Illuminate\Support\Facades\DB');
+    ->not->toUse(DB::class);
 
 arch('models are Eloquent models')
     ->expect('App\Models')
@@ -33,7 +34,7 @@ it('keeps no static state in app classes, which long-running workers would keep 
             continue;                                            // interfaces and enums have no properties
         }
 
-        foreach ((new ReflectionClass($class))->getProperties(ReflectionProperty::IS_STATIC) as $property) {
+        foreach (new ReflectionClass($class)->getProperties(ReflectionProperty::IS_STATIC) as $property) {
             if ($property->getDeclaringClass()->getName() === $class) {
                 $offenders[] = "{$class}::\${$property->getName()}";
             }

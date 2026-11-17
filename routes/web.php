@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/generations')->name('home');      // guests are sent on to the login page
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::redirect('dashboard', '/generations')->name('dashboard');       // the studio is the home page
 
     Route::get('generations', [GenerationController::class, 'index'])->name('generations.index');
