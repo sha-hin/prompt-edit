@@ -1,0 +1,62 @@
+# Local development stack. `docker compose up` installs dependencies, migrates
+# and starts the app on http://localhost:8000 with Vite on :5173.
+x-php: &php
+    build: ./docker/php
+    image: prompt-edit/php:dev
+    volumes:
+        - .:/var/www/prompt-edit
+        - composer-cache:/root/.composer/cache
+        - npm-cache:/root/.npm
+    environment:
+        # DB settings live in .env (written by init.sh); Vite reads this one.
+        VITE_HMR_HOST: localhost
+
+services:
+    mysql:
+        image: mysql:8.4
+        environment:
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: prompt_edit
+        ports:
+            - '${FORWARD_DB_PORT:-3306}:3306'
+        volumes:
+            - mysql-data:/var/lib/mysql
+            - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-psecret']
+            interval: 5s
+            timeout: 5s
+            retries: 20
+
+    init:
+        <<: *php
+        command: sh docker/php/init.sh
+        depends_on:
+            mysql:
+                condition: service_healthy
+
+    app:
+        <<: *php
+        command: php artisan serve --host=0.0.0.0 --port=8000
+        ports:
+            - '${APP_PORT:-8000}:8000'
+        depends_on: &ready
+            init:
+                condition: service_completed_successfully
+
+    queue:
+        <<: *php
+        command: php artisan queue:listen --tries=1 --timeout=0
+        depends_on: *ready
+
+    vite:
+        <<: *php
+        command: npm run dev
+        ports:
+            - '5173:5173'
+        depends_on: *ready
+
+volumes:
+    mysql-data:
+    composer-cache:
+    npm-cache:

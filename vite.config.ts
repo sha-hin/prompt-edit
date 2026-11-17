@@ -32,6 +32,11 @@ export default defineConfig({
         }),
     ]),
     server: {
+        // In Docker, listen on all interfaces and point the browser at the host.
+        ...(process.env.VITE_HMR_HOST && {
+            host: '0.0.0.0',
+            hmr: { host: process.env.VITE_HMR_HOST },
+        }),
         watch: {
             ignored: [
                 '**/.agents/**',
