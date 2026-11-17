@@ -3,7 +3,7 @@
 FROM php:8.4-cli-bookworm
 
 COPY --from=mlocati/php-extension-installer:2.7 /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions pdo_mysql pcntl redis intl zip bcmath \
+RUN install-php-extensions pdo_mysql pcntl redis intl zip bcmath pcov \
     && apt-get update \
     && apt-get install -y --no-install-recommends git unzip default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
