@@ -1,6 +1,8 @@
 <?php
 
+use App\Credits\CreditLedger;
 use App\Models\User;
+use App\Money\Money;
 use Illuminate\Support\Facades\Http;
 
 it('requires a signed-in user', function (): void {
@@ -20,12 +22,14 @@ it('returns the charge range with Pixelforge defaults filled in', function (): v
                     'min' => '0.058137500',
                     'max' => '0.086275000',
                     'display' => '$0.0581 – $0.0863',
+                    'max_display' => '$0.0863',
                 ],
                 'tokens' => [
                     'min' => ['input_text' => 2, 'input_image' => 0, 'output' => 1_100, 'reasoning' => 200, 'total' => 1_302],
                     'max' => ['input_text' => 4, 'input_image' => 0, 'output' => 1_100, 'reasoning' => 2_000, 'total' => 3_104],
                 ],
             ],
+            'can_afford' => false,                                  // a factory user has no credit
         ]);
 });
 
@@ -84,3 +88,16 @@ it('still estimates with the configured rates when Pixelforge pricing is down', 
         ->assertOk()
         ->assertJsonPath('data.charge.min', '0.058137500');
 });
+
+it('says whether the user can afford the estimate maximum', function (int $credit, bool $canAfford): void {
+    fakePricing();
+    $user = User::factory()->create();
+    app(CreditLedger::class)->grant($user, Money::nanos($credit), 'test-credit');
+
+    $this->actingAs($user)
+        ->postJson(route('generations.estimate'), ['prompt' => 'a red cube'])
+        ->assertJsonPath('can_afford', $canAfford);
+})->with([
+    'exactly the maximum' => [86_275_000, true],
+    'one nano short' => [86_274_999, false],
+]);

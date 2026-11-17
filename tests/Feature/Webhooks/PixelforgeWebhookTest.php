@@ -1,9 +1,13 @@
 <?php
 
+use App\Enums\CreditTransactionType;
 use App\Enums\GenerationStatus;
+use App\Generations\ApplyGenerationUpdate;
 use App\Models\Generation;
+use App\Models\User;
 use App\Models\WebhookEvent;
 use App\Pixelforge\PixelforgeException;
+use App\Pixelforge\PixelforgeGeneration;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 
@@ -227,4 +231,31 @@ it('stores nothing when applying fails, so the redelivery is applied', function 
     deliver(pixelforgeEvent('generation.succeeded', pixelforgeJson('generation-succeeded')))->assertOk();
 
     expect($generation->refresh()->charge_nanos)->toBe(14_606_250);
+});
+
+it('takes the charge from the user\'s credit once, for a duplicate webhook and a poll', function (): void {
+    $user = User::factory()->withCredits()->create();
+    $generation = Generation::factory()->for($user)->queued()->create(['pixelforge_id' => TEST_GENERATION_ID]);
+    $event = pixelforgeEvent('generation.succeeded', pixelforgeJson('generation-succeeded'));
+
+    deliver($event)->assertOk();
+    deliver(pixelforgeEvent('generation.succeeded', pixelforgeJson('generation-succeeded'), id: 'evt_02'))->assertOk();
+    app(ApplyGenerationUpdate::class)->handle(PixelforgeGeneration::fromResponse(pixelforgeJson('generation-succeeded')));
+
+    expect($user->creditTransactions()->where('type', CreditTransactionType::Charge)->sole()->amount_nanos)->toBe(-14_606_250)
+        ->and($user->refresh()->balance_nanos)->toBe(10_000_000_000 - 14_606_250)
+        ->and($generation->refresh()->charge_nanos)->toBe(14_606_250);
+});
+
+it('takes nothing from the user\'s credit when a generation fails', function (): void {
+    $user = User::factory()->withCredits()->create();
+    Generation::factory()->for($user)->queued()->create(['pixelforge_id' => TEST_GENERATION_ID]);
+
+    deliver(pixelforgeEvent('generation.failed', pixelforgeJson('generation-queued', [
+        'status' => 'failed',
+        'error' => ['code' => 'generation_failed', 'message' => 'No image could be made for this prompt.'],
+    ])))->assertOk();
+
+    expect($user->creditTransactions()->where('type', CreditTransactionType::Charge)->count())->toBe(0)
+        ->and($user->refresh()->balance_nanos)->toBe(10_000_000_000);
 });

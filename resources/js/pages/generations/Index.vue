@@ -29,8 +29,12 @@ const inFlight = computed(() =>
     ),
 );
 
-// Reload only the history, and only while something on this page is still running.
-const poll = usePoll(POLL_MS, { only: ['generations'] }, { autoStart: false });
+// Reload only the history and the credit (a finished image is charged), and only while something on this page is still running.
+const poll = usePoll(
+    POLL_MS,
+    { only: ['generations', 'credits'] },
+    { autoStart: false },
+);
 
 watch(inFlight, (running) => (running ? poll.start() : poll.stop()), {
     immediate: true,

@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, ChartColumn, FolderGit2, ImagePlus } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
+import CreditBalance from '@/components/credits/CreditBalance.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -65,6 +66,7 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
+            <CreditBalance />
             <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>

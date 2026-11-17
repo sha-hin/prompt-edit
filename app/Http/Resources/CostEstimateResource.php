@@ -27,6 +27,7 @@ final class CostEstimateResource extends JsonResource
                 'min' => $min->toDecimal(),                  // exact, 9 decimals, as strings: never floats
                 'max' => $max->toDecimal(),
                 'display' => $min->equals($max) ? $min->format() : "{$min->format()} – {$max->format()}",
+                'max_display' => $max->format(),            // what the user must have available
             ],
             'tokens' => [
                 'min' => $this->tokens($this->resource->minUsage),

@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Credits\CreditLedger;
 use App\Models\User;
+use App\Money\Money;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -44,6 +46,15 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Give the user free credit, through the ledger so the balance matches its entries.
+     */
+    public function withCredits(int $dollars = 10): static
+    {
+        return $this->afterCreating(fn (User $user) => app(CreditLedger::class)
+            ->grant($user, Money::nanos($dollars * Money::NANOS_PER_DOLLAR), 'factory-credits'));
     }
 
     /**

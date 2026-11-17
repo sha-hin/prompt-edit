@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\SpendReportController;
+use App\Http\Controllers\Credits\CreditPurchaseController;
 use App\Http\Controllers\Generations\GenerationController;
 use App\Http\Controllers\Generations\GenerationEstimateController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('generations', [GenerationController::class, 'store'])
         ->middleware('throttle:10,1')
         ->name('generations.store');
+
+    Route::post('credits/purchases', CreditPurchaseController::class)
+        ->middleware('throttle:10,1')
+        ->name('credits.purchase');
 
     Route::get('admin/report', SpendReportController::class)
         ->middleware('can:viewAdminReport')

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { useForm, useHttp } from '@inertiajs/vue3';
+import { useForm, useHttp, usePage } from '@inertiajs/vue3';
 import { Plus, Sparkles, X } from '@lucide/vue';
 import { watchDebounced } from '@vueuse/core';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import GenerationController from '@/actions/App/Http/Controllers/Generations/GenerationController';
 import GenerationEstimateController from '@/actions/App/Http/Controllers/Generations/GenerationEstimateController';
+import BuyCreditsDialog from '@/components/credits/BuyCreditsDialog.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,9 +62,11 @@ const estimatePayload = (): EstimatePayload => ({
 });
 
 const estimate = ref<CostEstimate | null>(null);
-const estimateRequest = useHttp<EstimatePayload, { data: CostEstimate }>(
-    estimatePayload(),
-);
+const canAfford = ref(true); // the server compares the estimate maximum with the available credit
+const estimateRequest = useHttp<
+    EstimatePayload,
+    { data: CostEstimate; can_afford: boolean }
+>(estimatePayload());
 
 async function refreshEstimate(): Promise<void> {
     estimateRequest.cancel(); // a newer estimate replaces any still in flight
@@ -73,6 +76,7 @@ async function refreshEstimate(): Promise<void> {
             .transform(estimatePayload)
             .submit(GenerationEstimateController());
         estimate.value = response.data;
+        canAfford.value = response.can_afford;
     } catch {
         // cancelled, rate limited or invalid input: keep showing the last estimate
     }
@@ -83,6 +87,12 @@ watchDebounced(() => estimatePayload(), refreshEstimate, {
     deep: true,
 });
 onMounted(refreshEstimate);
+
+// Buying credits, or a running image finishing, changes what is affordable.
+const page = usePage();
+const credits = computed(() => page.props.credits);
+const creditsError = computed(() => page.props.errors.credits); // not a form field, so not in form.errors
+watch(() => credits.value?.available.amount, refreshEstimate);
 
 const promptLength = computed(() => form.prompt.length);
 
@@ -252,7 +262,35 @@ function submit(): void {
             </p>
         </div>
 
-        <Button type="submit" size="lg" :disabled="form.processing">
+        <div
+            v-if="!canAfford"
+            class="flex flex-col gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+            role="status"
+        >
+            <p class="text-sm">
+                This image can cost up to
+                <span class="font-mono font-medium">{{
+                    estimate?.charge.max_display
+                }}</span
+                >. You have
+                <span class="font-mono font-medium">{{
+                    credits?.available.display
+                }}</span>
+                available.
+            </p>
+            <BuyCreditsDialog>
+                <Button type="button" size="sm" class="shrink-0">
+                    <Plus /> Buy credits
+                </Button>
+            </BuyCreditsDialog>
+        </div>
+        <InputError :message="creditsError" />
+
+        <Button
+            type="submit"
+            size="lg"
+            :disabled="form.processing || !canAfford"
+        >
             <Spinner v-if="form.processing" />
             <Sparkles v-else />
             Generate image

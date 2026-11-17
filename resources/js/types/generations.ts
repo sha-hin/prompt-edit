@@ -50,5 +50,5 @@ export type Paginated<T> = {
 };
 
 export type CostEstimate = {
-    charge: MoneyRange;
+    charge: MoneyRange & { max_display: string };
 };

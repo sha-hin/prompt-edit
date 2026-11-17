@@ -10,6 +10,16 @@ enum GenerationStatus: string
     case Succeeded = 'succeeded';
     case Failed = 'failed';
 
+    /**
+     * Still waiting for a result: these hold a reservation on the user's credit.
+     *
+     * @return list<self>
+     */
+    public static function inFlight(): array
+    {
+        return [self::Pending, self::Queued, self::Processing];
+    }
+
     public function isFinal(): bool
     {
         return $this === self::Succeeded || $this === self::Failed;

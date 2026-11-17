@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Generations;
 
+use App\Credits\InsufficientCredits;
 use App\Generations\CreateGeneration;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Generations\StoreGenerationRequest;
@@ -9,6 +10,7 @@ use App\Http\Resources\GenerationResource;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,7 +35,11 @@ final class GenerationController extends Controller
      */
     public function store(StoreGenerationRequest $request, #[CurrentUser] User $user, CreateGeneration $createGeneration): RedirectResponse
     {
-        $createGeneration->handle($user, $request->spec());
+        try {
+            $createGeneration->handle($user, $request->spec());
+        } catch (InsufficientCredits $e) {
+            throw ValidationException::withMessages(['credits' => $e->getMessage()]);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Generation queued.')]);
 

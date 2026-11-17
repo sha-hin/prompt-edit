@@ -2,6 +2,7 @@
 
 namespace App\Generations;
 
+use App\Credits\CreditLedger;
 use App\Enums\GenerationStatus;
 use App\Models\Generation;
 use App\Pixelforge\PixelforgeException;
@@ -14,11 +15,14 @@ use Illuminate\Support\Facades\DB;
  * Bring our row up to date with what Pixelforge reports, from a webhook or a poll.
  *
  * The row is locked and final statuses never change, so the charge is written once:
- * in the same update that makes the generation succeeded.
+ * in the same transaction that makes the generation succeeded, along with the ledger entry.
  */
 final readonly class ApplyGenerationUpdate
 {
-    public function __construct(private PriceCalculator $calculator) {}
+    public function __construct(
+        private PriceCalculator $calculator,
+        private CreditLedger $ledger,
+    ) {}
 
     /**
      * @return Generation|null null when the generation isn't ours
@@ -91,6 +95,8 @@ final readonly class ApplyGenerationUpdate
             'image_url_expires_at' => $snapshot->imageUrlExpiresAt,
             'completed_at' => $snapshot->completedAt ?? now(),
         ]);
+
+        $this->ledger->charge($generation);
     }
 
     private function fail(Generation $generation, PixelforgeGeneration $snapshot): void
