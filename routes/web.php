@@ -17,19 +17,19 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('generations/history', [GenerationController::class, 'history'])->name('generations.history');
     Route::get('generations/{generation}', [GenerationController::class, 'show'])->name('generations.show');
     Route::get('generations/{generation}/download', GenerationImageController::class)
-        ->middleware('throttle:30,1')
+        ->middleware('throttle:downloads')
         ->name('generations.download');
 
     Route::post('generations/estimate', GenerationEstimateController::class)
-        ->middleware('throttle:60,1')
+        ->middleware('throttle:estimates')
         ->name('generations.estimate');
 
     Route::post('generations', [GenerationController::class, 'store'])
-        ->middleware('throttle:10,1')
+        ->middleware('throttle:generations')
         ->name('generations.store');
 
     Route::post('credits/purchases', CreditPurchaseController::class)
-        ->middleware('throttle:10,1')
+        ->middleware('throttle:credit-purchases')
         ->name('credits.purchase');
 
     Route::middleware('can:viewAdminReport')->prefix('admin')->name('admin.')->group(function (): void {
