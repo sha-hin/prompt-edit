@@ -35,6 +35,10 @@ class CreateNewUser implements CreatesNewUsers
                 'password' => $input['password'],
             ]);
 
+            if (! config()->boolean('auth.verify_email')) {
+                $user->markEmailAsVerified();               // verified already, so Laravel sends no verification email
+            }
+
             $this->ledger->grantSignupBonus($user);         // $10 free, so a new user can try it straight away
 
             return $user;
