@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, ChartColumn, FolderGit2, ImagePlus } from '@lucide/vue';
+import {
+    BookOpen,
+    ChartColumn,
+    FolderGit2,
+    History,
+    ImagePlus,
+    Users,
+} from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import CreditBalance from '@/components/credits/CreditBalance.vue';
@@ -17,7 +24,8 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { report } from '@/routes/admin';
-import { index as generations } from '@/routes/generations';
+import { index as adminUsers } from '@/routes/admin/users';
+import { history, index as generations } from '@/routes/generations';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -28,8 +36,16 @@ const mainNavItems = computed<NavItem[]>(() => [
         href: generations(),
         icon: ImagePlus,
     },
+    {
+        title: 'History',
+        href: history(),
+        icon: History,
+    },
     ...(page.props.auth.user.is_admin
-        ? [{ title: 'Admin report', href: report(), icon: ChartColumn }]
+        ? [
+              { title: 'Overview', href: report(), icon: ChartColumn },
+              { title: 'Users', href: adminUsers(), icon: Users },
+          ]
         : []),
 ]);
 

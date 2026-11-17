@@ -2,7 +2,7 @@
 
 namespace App\Reports;
 
-use App\Models\User;
+use App\Money\Money;
 use App\Pixelforge\PixelforgeUsage;
 use Carbon\CarbonImmutable;
 
@@ -13,15 +13,15 @@ final readonly class SpendReport
 {
     /**
      * @param  array<string, SpendRow>  $days  keyed by Y-m-d, newest first, with a row for every day in the range
-     * @param  list<array{user: User|null, row: SpendRow}>  $users  highest spend first; user is null for deleted accounts
      * @param  PixelforgeUsage|null  $pixelforge  null when Pixelforge couldn't be reached
      */
     public function __construct(
         public CarbonImmutable $start,
         public CarbonImmutable $end,
         public array $days,
-        public array $users,
         public SpendRow $total,
+        public Money $creditsSold,          // purchases made in the range
+        public Money $creditsGranted,       // free credit given in the range, such as signup bonuses
         public ?PixelforgeUsage $pixelforge,
     ) {}
 }

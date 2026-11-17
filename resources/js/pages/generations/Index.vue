@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { Head, Link, usePoll } from '@inertiajs/vue3';
-import { ImagePlus } from '@lucide/vue';
+import { ArrowRight, ImagePlus } from '@lucide/vue';
 import { computed, watch } from 'vue';
 import GenerationCard from '@/components/generations/GenerationCard.vue';
 import GenerationForm from '@/components/generations/GenerationForm.vue';
-import { Button } from '@/components/ui/button';
-import { index } from '@/routes/generations';
-import type { Generation, Paginated } from '@/types';
+import { history, index } from '@/routes/generations';
+import type { Generation } from '@/types';
 
 defineOptions({
     layout: {
@@ -19,7 +18,10 @@ defineOptions({
     },
 });
 
-const props = defineProps<{ generations: Paginated<Generation> }>();
+const props = defineProps<{
+    generations: { data: Generation[] };
+    total: number;
+}>();
 
 const POLL_MS = 3000;
 
@@ -32,7 +34,7 @@ const inFlight = computed(() =>
 // Reload only the history and the credit (a finished image is charged), and only while something on this page is still running.
 const poll = usePoll(
     POLL_MS,
-    { only: ['generations', 'credits'] },
+    { only: ['generations', 'total', 'credits'] },
     { autoStart: false },
 );
 
@@ -65,14 +67,16 @@ watch(inFlight, (running) => (running ? poll.start() : poll.stop()), {
         <section class="flex min-w-0 flex-col gap-4">
             <header class="flex items-baseline justify-between gap-4">
                 <h2 class="font-display text-xl font-semibold tracking-tight">
-                    Your generations
+                    Recent generations
                 </h2>
-                <span
-                    v-if="generations.meta.total"
-                    class="studio-label text-muted-foreground"
+                <Link
+                    v-if="total > generations.data.length"
+                    :href="history()"
+                    class="inline-flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline"
                 >
-                    {{ generations.meta.total }} total
-                </span>
+                    View all {{ total }}
+                    <ArrowRight class="size-4" />
+                </Link>
             </header>
 
             <div
@@ -94,47 +98,6 @@ watch(inFlight, (running) => (running ? poll.start() : poll.stop()), {
                     :generation="generation"
                 />
             </div>
-
-            <nav
-                v-if="generations.meta.last_page > 1"
-                class="flex items-center justify-between gap-4"
-                aria-label="Pagination"
-            >
-                <Button
-                    variant="outline"
-                    size="sm"
-                    :disabled="!generations.links.prev"
-                    :as-child="!!generations.links.prev"
-                >
-                    <Link
-                        v-if="generations.links.prev"
-                        :href="generations.links.prev"
-                        preserve-scroll
-                    >
-                        Newer
-                    </Link>
-                    <template v-else>Newer</template>
-                </Button>
-                <span class="text-xs text-muted-foreground">
-                    Page {{ generations.meta.current_page }} of
-                    {{ generations.meta.last_page }}
-                </span>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    :disabled="!generations.links.next"
-                    :as-child="!!generations.links.next"
-                >
-                    <Link
-                        v-if="generations.links.next"
-                        :href="generations.links.next"
-                        preserve-scroll
-                    >
-                        Older
-                    </Link>
-                    <template v-else>Older</template>
-                </Button>
-            </nav>
         </section>
     </div>
 </template>

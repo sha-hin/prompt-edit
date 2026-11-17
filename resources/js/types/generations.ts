@@ -26,10 +26,30 @@ export type Generation = {
     estimate: MoneyRange;
     charge: { amount: string; display: string; exact: string } | null;
     error_message: string | null;
-    image_url: string | null;
-    image_url_expires_at: string | null;
+    image: GenerationImage;
+    usage: TokenUsage | null;
     created_at: string;
     completed_at: string | null;
+};
+
+/** Pixelforge keeps images for 24 hours; we open its signed URL and pass downloads through. */
+export type GenerationImage = {
+    status: 'ready' | 'expired' | 'none';
+    url: string | null;
+    download_url: string | null;
+    expires_at: string | null;
+};
+
+export type TokenUsage = {
+    input_text_tokens: number;
+    input_image_tokens: number;
+    output_tokens: number;
+    reasoning_tokens: number;
+};
+
+export type HistoryFilters = {
+    status: 'succeeded' | 'running' | 'failed' | null;
+    search: string | null;
 };
 
 export type Paginated<T> = {

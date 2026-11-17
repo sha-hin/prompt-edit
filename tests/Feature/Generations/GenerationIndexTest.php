@@ -30,21 +30,20 @@ it('never shows another user\'s generations', function (): void {
         ->assertInertia(fn (Assert $page): Assert => $page->has('generations.data', 0));
 });
 
-it('pages the history', function (): void {
+it('shows only the latest few, with the total for "View all"', function (): void {
     $user = User::factory()->create();
-    Generation::factory()->for($user)->count(GenerationController::PER_PAGE + 2)->create();
+    Generation::factory()->for($user)->count(GenerationController::RECENT + 2)->create();
 
     $this->actingAs($user)
-        ->get(route('generations.index', ['page' => 2]))
+        ->get(route('generations.index'))
         ->assertInertia(fn (Assert $page): Assert => $page
-            ->has('generations.data', 2)
-            ->where('generations.meta.current_page', 2)
-            ->where('generations.meta.last_page', 2));
+            ->has('generations.data', GenerationController::RECENT)
+            ->where('total', GenerationController::RECENT + 2));
 });
 
 it('shows a succeeded generation\'s charge and image, but never Pixelforge\'s cost', function (): void {
     $user = User::factory()->create();
-    Generation::factory()->for($user)->queued()->create([
+    $generation = Generation::factory()->for($user)->queued()->create([
         'status' => GenerationStatus::Succeeded,
         'cost_nanos' => 11_685_000,
         'charge_nanos' => 14_606_250,
@@ -59,9 +58,12 @@ it('shows a succeeded generation\'s charge and image, but never Pixelforge\'s co
             ->where('generations.data.0.status', 'succeeded')
             ->where('generations.data.0.charge', ['amount' => '0.014606250', 'display' => '$0.0146', 'exact' => '$0.014606250'])
             ->where('generations.data.0.estimate', ['min' => '0.058137500', 'max' => '0.086275000', 'display' => '$0.0581 – $0.0863'])
-            ->where('generations.data.0.image_url', 'https://pixelforge.promptedit.dev/images/gen_1.png')
-            ->where('generations.data.0.image_url_expires_at', '2026-11-18T10:00:00Z')
+            ->where('generations.data.0.image.status', 'ready')
+            ->where('generations.data.0.image.url', 'https://pixelforge.promptedit.dev/images/gen_1.png')
+            ->where('generations.data.0.image.download_url', route('generations.download', $generation))
+            ->where('generations.data.0.image.expires_at', '2026-11-18T10:00:00Z')
             ->missing('generations.data.0.cost_nanos')
+            ->missing('generations.data.0.cost')
             ->missing('generations.data.0.rates')
             ->missing('generations.data.0.idempotency_key'));
 });

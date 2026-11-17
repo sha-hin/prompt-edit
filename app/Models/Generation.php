@@ -58,6 +58,16 @@ final class Generation extends Model
     }
 
     /**
+     * Pixelforge keeps the image for 24 hours after completion, and we don't store a copy.
+     */
+    public function imageAvailable(): bool
+    {
+        return $this->status === GenerationStatus::Succeeded
+            && $this->image_url !== null
+            && ($this->image_url_expires_at === null || $this->image_url_expires_at->isFuture());
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

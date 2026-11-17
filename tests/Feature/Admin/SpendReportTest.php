@@ -1,5 +1,7 @@
 <?php
 
+use App\Credits\CreditLedger;
+use App\Enums\CreditPack;
 use App\Enums\GenerationStatus;
 use App\Models\Generation;
 use App\Models\User;
@@ -77,7 +79,7 @@ it('sends guests to the login page', function (): void {
     $this->get(route('admin.report'))->assertRedirect(route('login'));
 });
 
-it('sums spend, cost and profit per day, per user and in total, to the nano', function (): void {
+it('sums spend, cost and profit per day and in total, to the nano', function (): void {
     $ada = User::factory()->create(['name' => 'Ada']);
     $bob = User::factory()->create(['name' => 'Bob']);
     finishedGeneration($ada, '2026-11-17 09:00:00', cost: 11_685_000, charge: 14_606_250);
@@ -101,12 +103,7 @@ it('sums spend, cost and profit per day, per user and in total, to the nano', fu
             ->where('report.total.spend.amount', '0.074543751')
             ->where('report.total.cost.amount', '0.059635001')
             ->where('report.total.profit.amount', '0.014908750')
-            ->where('report.total.margin', '20.0%')
-            ->where('report.users.0.name', 'Bob')                   // highest spend first
-            ->where('report.users.0.spend.amount', '0.059937500')
-            ->where('report.users.0.failed', 1)
-            ->where('report.users.1.name', 'Ada')
-            ->where('report.users.1.profit.amount', '0.002921250'));
+            ->where('report.total.margin', '20.0%'));
 });
 
 it('counts a generation on the UTC day it completed, as Pixelforge bills it', function (): void {
@@ -134,8 +131,7 @@ it('leaves out generations still running, outside the range, or never submitted'
         ->assertInertia(fn (Assert $page): Assert => $page
             ->where('report.total.succeeded', 0)
             ->where('report.total.failed', 0)
-            ->where('report.total.spend.amount', '0.000000000')
-            ->has('report.users', 0));
+            ->where('report.total.spend.amount', '0.000000000'));
 });
 
 it('matches Pixelforge when the costs and counts agree', function (): void {
@@ -200,9 +196,25 @@ it('keeps a deleted user\'s generations in the books', function (): void {
 
     visitReport(['start' => '2026-11-17', 'end' => '2026-11-17'])
         ->assertInertia(fn (Assert $page): Assert => $page
-            ->where('report.users.0.name', 'Deleted user')
-            ->where('report.users.0.email', null)
+            ->where('report.total.spend.amount', '0.014606250')
             ->where('report.total.pixelforge.matches', true));
+});
+
+it('shows the credit sold and given away in the range', function (): void {
+    $user = User::factory()->create();
+    app(CreditLedger::class)->grantSignupBonus($user);
+    app(CreditLedger::class)->purchase($user, CreditPack::Ten, 'buy-1');
+    app(CreditLedger::class)->purchase($user, CreditPack::Five, 'buy-2');
+    $this->travel(-3)->days();
+    app(CreditLedger::class)->purchase($user, CreditPack::TwentyFive, 'before-the-range');
+    $this->travelBack();
+    $this->travelTo(CarbonImmutable::parse('2026-11-17 10:00:00'));
+    fakeUsage();
+
+    visitReport(['start' => '2026-11-16', 'end' => '2026-11-17'])
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->where('report.credits_sold.amount', '15.000000000')
+            ->where('report.credits_granted.amount', '10.000000000'));
 });
 
 it('accepts up to 92 days', function (): void {

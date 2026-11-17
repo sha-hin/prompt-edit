@@ -89,6 +89,22 @@ final readonly class PixelforgeClient
         ])));
     }
 
+    /**
+     * The PNG behind a signed image_url, for passing on to the user as a download. Nothing is kept.
+     *
+     * @throws PixelforgeException|ConnectionException
+     */
+    public function downloadImage(string $imageUrl): string
+    {
+        $response = Http::timeout($this->timeout * 3)->connectTimeout($this->connectTimeout)->get($imageUrl);   // a PNG is larger than a JSON answer
+
+        if ($response->failed()) {
+            throw PixelforgeException::fromResponse($response);
+        }
+
+        return $response->body();
+    }
+
     private function request(): PendingRequest
     {
         return Http::baseUrl($this->baseUrl)
