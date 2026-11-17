@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-24.04
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: prompt_edit_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -psecret"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, pcntl, redis
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci
+
+      - name: Prepare application
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Frontend checks
+        run: |
+          npm run check
+          npm run types:check
+
+      - name: Style (Pint)
+        run: vendor/bin/pint --parallel --test
+
+      - name: Types (Larastan)
+        run: vendor/bin/phpstan analyse --no-progress
+
+      - name: Rector
+        run: vendor/bin/rector --dry-run
+
+      - name: Tests (Pest, architecture tests included)
+        run: vendor/bin/pest --parallel
