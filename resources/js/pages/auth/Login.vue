@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
@@ -20,10 +21,21 @@ defineOptions({
     },
 });
 
+type DemoAccount = { role: string; email: string; password: string };
+
 defineProps<{
     status?: string;
     canResetPassword: boolean;
+    demoAccounts: DemoAccount[];
 }>();
+
+const email = ref('');
+const password = ref('');
+
+function fillWith(account: DemoAccount): void {
+    email.value = account.email;
+    password.value = account.password;
+}
 </script>
 
 <template>
@@ -49,6 +61,7 @@ defineProps<{
                 <Label for="email">Email address</Label>
                 <Input
                     id="email"
+                    v-model="email"
                     type="email"
                     name="email"
                     required
@@ -74,6 +87,7 @@ defineProps<{
                 </div>
                 <PasswordInput
                     id="password"
+                    v-model="password"
                     name="password"
                     required
                     :tabindex="2"
@@ -107,4 +121,41 @@ defineProps<{
             <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
         </div>
     </Form>
+
+    <section
+        v-if="demoAccounts.length"
+        class="mt-8 rounded-lg border bg-secondary/60 p-4"
+        aria-labelledby="demo-accounts"
+    >
+        <h2 id="demo-accounts" class="studio-label text-muted-foreground">
+            Demo accounts
+        </h2>
+        <ul class="mt-3 grid gap-3">
+            <li
+                v-for="account in demoAccounts"
+                :key="account.email"
+                class="flex items-center justify-between gap-3 rounded-md border bg-card p-3"
+            >
+                <div class="min-w-0 text-sm">
+                    <p class="font-medium">{{ account.role }}</p>
+                    <p class="truncate font-mono text-xs text-muted-foreground">
+                        {{ account.email }}
+                    </p>
+                    <p class="truncate font-mono text-xs text-muted-foreground">
+                        {{ account.password }}
+                    </p>
+                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    class="shrink-0"
+                    :data-test="`fill-${account.role.toLowerCase()}`"
+                    @click="fillWith(account)"
+                >
+                    Fill in
+                </Button>
+            </li>
+        </ul>
+    </section>
 </template>

@@ -32,6 +32,17 @@ return [
         'base_url' => env('PIXELFORGE_BASE_URL', 'https://pixelforge.promptedit.dev/v1'),
         'key' => env('PIXELFORGE_API_KEY'),
         'webhook_secret' => env('PIXELFORGE_WEBHOOK_SECRET'),   // whsec_…, belongs to the same key as PIXELFORGE_API_KEY
+
+        'timeout' => 10,            // seconds per request
+        'connect_timeout' => 5,
+
+        // USD per 1M tokens, as published. Estimates use GET /v1/pricing and fall back to these when it's down.
+        'rates' => [
+            'input_text_tokens' => '5.00',
+            'input_image_tokens' => '10.00',
+            'output_tokens' => '40.00',
+            'reasoning_tokens' => '12.50',
+        ],
     ],
 
     'slack' => [

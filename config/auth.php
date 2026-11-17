@@ -114,4 +114,17 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Email Verification
+    |--------------------------------------------------------------------------
+    |
+    | When off, accounts are created (and keep) a verified email, so no
+    | verification email is sent and nobody waits on one. The deployed app
+    | has no mail set up, so it runs with AUTH_VERIFY_EMAIL=false.
+    |
+    */
+
+    'verify_email' => (bool) env('AUTH_VERIFY_EMAIL', true),
+
 ];

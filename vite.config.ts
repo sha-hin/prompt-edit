@@ -12,8 +12,15 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.ts'],
             refresh: true,
             fonts: [
-                bunny('Instrument Sans', {
+                // PromptEdit's studio type: Inter for UI, Roboto Mono for labels, Bricolage Grotesque for display
+                bunny('Inter', {
                     weights: [400, 500, 600],
+                }),
+                bunny('Roboto Mono', {
+                    weights: [400, 500],
+                }),
+                bunny('Bricolage Grotesque', {
+                    weights: [600, 700],
                 }),
             ],
         }),
@@ -32,6 +39,11 @@ export default defineConfig({
         }),
     ]),
     server: {
+        // In Docker, listen on all interfaces and point the browser at the host.
+        ...(process.env.VITE_HMR_HOST && {
+            host: '0.0.0.0',
+            hmr: { host: process.env.VITE_HMR_HOST },
+        }),
         watch: {
             ignored: [
                 '**/.agents/**',

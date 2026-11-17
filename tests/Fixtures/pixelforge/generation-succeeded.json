@@ -1,0 +1,29 @@
+{
+    "id": "gen_01M7N6J8PJWNEKE6XW84S74ZV9",
+    "object": "generation",
+    "status": "succeeded",
+    "prompt": "a tiny red cube on a white table [succeed]",
+    "size": "1024x1024",
+    "quality": "low",
+    "reference_images": [],
+    "metadata": { "source": "docker-smoke-test" },
+    "image_url": "https://pixelforge.promptedit.dev/images/gen_01M7N6J8PJWNEKE6XW84S74ZV9.png?expires=1795020548&signature=88a12702172fe5975dec5b1778e3227dec072318dd2d351f6333542507e7e2ac",
+    "image_url_expires_at": "2026-11-18T16:49:08Z",
+    "usage": {
+        "input_text_tokens": 12,
+        "input_image_tokens": 0,
+        "output_tokens": 280,
+        "reasoning_tokens": 34,
+        "total_tokens": 326
+    },
+    "rates": {
+        "input_text_tokens": "5.00",
+        "input_image_tokens": "10.00",
+        "output_tokens": "40.00",
+        "reasoning_tokens": "12.50"
+    },
+    "error": null,
+    "created_at": "2026-11-17T16:48:41Z",
+    "started_at": "2026-11-17T16:48:43Z",
+    "completed_at": "2026-11-17T16:49:08Z"
+}

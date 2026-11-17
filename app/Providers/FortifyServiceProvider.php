@@ -51,6 +51,13 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(fn (Request $request) => Inertia::render('auth/Login', [
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'status' => $request->session()->get('status'),
+            'demoAccounts' => config()->boolean('demo.enabled')
+                ? array_map(fn (array $account): array => [
+                    'role' => $account['admin'] ? 'Admin' : 'User',
+                    'email' => $account['email'],
+                    'password' => $account['password'],
+                ], config()->array('demo.accounts'))
+                : [],
         ]));
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/ResetPassword', [
@@ -81,9 +88,7 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureRateLimiting(): void
     {
-        RateLimiter::for('two-factor', function (Request $request) {
-            return Limit::perMinute(5)->by($request->session()->get('login.id'));
-        });
+        RateLimiter::for('two-factor', fn (Request $request) => Limit::perMinute(5)->by($request->session()->get('login.id')));
 
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
@@ -91,10 +96,8 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($throttleKey);
         });
 
-        RateLimiter::for('passkeys', function (Request $request) {
-            return Limit::perMinute(10)->by(
-                ($request->input('credential.id') ?: $request->session()->getId()) . '|' . $request->ip(),
-            );
-        });
+        RateLimiter::for('passkeys', fn (Request $request) => Limit::perMinute(10)->by(
+            ($request->input('credential.id') ?: $request->session()->getId()) . '|' . $request->ip(),
+        ));
     }
 }
