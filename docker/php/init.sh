@@ -20,3 +20,6 @@ grep -q '^APP_KEY=base64:' .env || php artisan key:generate --ansi
 npm install --no-audit --no-fund
 
 php artisan migrate --force --ansi
+
+# The demo user and admin listed on the login page (config/demo.php).
+php artisan db:seed --force --ansi

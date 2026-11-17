@@ -10,12 +10,23 @@ Needs only Docker (or OrbStack). PHP, Composer, Node and MySQL all run in contai
 docker compose up -d
 ```
 
-The first run creates `.env`, installs dependencies, generates the app key and migrates. Then:
+The first run creates `.env`, installs dependencies, generates the app key, migrates and seeds the demo accounts. Then:
 
 - App: http://localhost:8000 (Vite dev server on :5173, queue worker running)
 - MySQL: `localhost:3306`, user `root`, password `secret`, databases `prompt_edit` and `prompt_edit_test`
 
 Set `PIXELFORGE_API_KEY` and `PIXELFORGE_WEBHOOK_SECRET` in `.env`, then `docker compose restart app queue`.
+
+### Demo accounts
+
+`php artisan db:seed` creates these, each with the $10 of free credit every new account gets. The login page lists them with a button that fills in the form.
+
+| Role  | Email                   | Password              |
+| ----- | ----------------------- | --------------------- |
+| User  | `user@promptedit.test`  | `demo-user-password`  |
+| Admin | `admin@promptedit.test` | `demo-admin-password` |
+
+The seeder is safe to rerun on every deploy. Change the emails and passwords with `DEMO_USER_*` and `DEMO_ADMIN_*`, or hide the list with `DEMO_ACCOUNTS=false` (see `config/demo.php`). Make any other user an admin with `php artisan users:make-admin {email}`.
 
 Run any command inside the stack:
 
