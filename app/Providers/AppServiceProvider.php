@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Pricing\Rates;
+use App\Pixelforge\PixelforgeClient;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -17,11 +17,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(function (): Rates {
-            /** @var array{input_text_tokens: string, input_image_tokens: string, output_tokens: string, reasoning_tokens: string} $rates */
-            $rates = config('services.pixelforge.rates');
+        $this->app->singleton(function (): PixelforgeClient {
+            /** @var array{input_text_tokens: string, input_image_tokens: string, output_tokens: string, reasoning_tokens: string} $fallbackRates */
+            $fallbackRates = config()->array('services.pixelforge.rates');
 
-            return Rates::fromPerMillion($rates);
+            return new PixelforgeClient(
+                baseUrl: config()->string('services.pixelforge.base_url'),
+                key: (string) config('services.pixelforge.key'),        // empty until set; Pixelforge answers 401
+                timeout: config()->integer('services.pixelforge.timeout'),
+                connectTimeout: config()->integer('services.pixelforge.connect_timeout'),
+                fallbackRates: $fallbackRates,
+            );
         });
     }
 

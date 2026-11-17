@@ -46,7 +46,7 @@ services:
 
     queue:
         <<: *php
-        command: php artisan queue:listen --tries=1 --timeout=0
+        command: php artisan queue:listen --queue=pixelforge,default --timeout=0
         depends_on: *ready
 
     vite:

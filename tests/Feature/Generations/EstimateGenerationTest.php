@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 it('requires a signed-in user', function (): void {
     $this->postJson(route('generations.estimate'), ['prompt' => 'a red cube'])
@@ -8,6 +9,7 @@ it('requires a signed-in user', function (): void {
 });
 
 it('returns the charge range with Pixelforge defaults filled in', function (): void {
+    fakePricing();
     // "a red cube" is 10 chars -> 3 tokens (2-4); medium 1024x1024 is 1,100 output and 200-2,000 reasoning
     $this->actingAs(User::factory()->create())
         ->postJson(route('generations.estimate'), ['prompt' => 'a red cube'])
@@ -28,6 +30,7 @@ it('returns the charge range with Pixelforge defaults filled in', function (): v
 });
 
 it('prices the worked maximum from the Pixelforge docs', function (): void {
+    fakePricing();
     $this->actingAs(User::factory()->create())
         ->postJson(route('generations.estimate'), [
             'prompt' => str_repeat('a', 400),
@@ -42,6 +45,7 @@ it('prices the worked maximum from the Pixelforge docs', function (): void {
 });
 
 it('estimates while the prompt is still empty', function (): void {
+    fakePricing();
     $this->actingAs(User::factory()->create())
         ->postJson(route('generations.estimate'), [])
         ->assertOk()
@@ -61,3 +65,22 @@ it('rejects invalid options', function (array $payload, string $field): void {
     'reference image is not a URL' => [['reference_images' => ['not a url']], 'reference_images.0'],
     'reference image is not http(s)' => [['reference_images' => ['ftp://example.com/a.png']], 'reference_images.0'],
 ]);
+
+it('uses the live Pixelforge rates', function (): void {
+    fakePricing(['input_text_tokens' => '10.00', 'input_image_tokens' => '20.00', 'output_tokens' => '80.00', 'reasoning_tokens' => '25.00']);
+
+    $this->actingAs(User::factory()->create())
+        ->postJson(route('generations.estimate'), ['prompt' => 'a red cube'])
+        ->assertOk()
+        ->assertJsonPath('data.charge.min', '0.116275000')           // twice the published rates, so twice the charge
+        ->assertJsonPath('data.charge.max', '0.172550000');
+});
+
+it('still estimates with the configured rates when Pixelforge pricing is down', function (): void {
+    Http::fake(['*/pricing' => Http::response(pixelforgeError('overloaded'), 503)]);
+
+    $this->actingAs(User::factory()->create())
+        ->postJson(route('generations.estimate'), ['prompt' => 'a red cube'])
+        ->assertOk()
+        ->assertJsonPath('data.charge.min', '0.058137500');
+});

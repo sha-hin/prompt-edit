@@ -19,3 +19,37 @@ pest()->extend(TestCase::class)
         Http::preventStrayRequests();
     })
     ->in('Feature', 'Unit');
+
+/**
+ * A real Pixelforge response body from tests/Fixtures/pixelforge, merged with $overrides.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function pixelforgeJson(string $name, array $overrides = []): array
+{
+    /** @var array<string, mixed> $json */
+    $json = json_decode((string) file_get_contents(__DIR__ . "/Fixtures/pixelforge/{$name}.json"), true, flags: JSON_THROW_ON_ERROR);
+
+    return array_replace($json, $overrides);
+}
+
+/**
+ * Answer GET /v1/pricing with the published rates, or with $rates instead.
+ *
+ * @param  array<string, string>  $rates
+ */
+function fakePricing(array $rates = []): void
+{
+    Http::fake(['*/pricing' => Http::response(pixelforgeJson('pricing', $rates === [] ? [] : ['rates' => $rates]))]);
+}
+
+/**
+ * Pixelforge's error body, as documented: { "error": { "type", "code", "message" } }.
+ *
+ * @return array{error: array{type: string, code: string, message: string}}
+ */
+function pixelforgeError(string $code, string $message = 'Something went wrong.'): array
+{
+    return ['error' => ['type' => 'test_error', 'code' => $code, 'message' => $message]];
+}
