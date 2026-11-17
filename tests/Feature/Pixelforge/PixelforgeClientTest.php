@@ -184,3 +184,29 @@ it('falls back to the configured rates when pricing is down, without caching the
     'unreachable' => fn () => Http::failedConnection(),
     'no rates in the body' => fn () => Http::response(['object' => 'pricing']),
 ]);
+
+it('reads billed usage per day as exact money', function (): void {
+    Http::fake(['*/usage*' => Http::response(pixelforgeJson('usage'))]);
+
+    $usage = pixelforge()->usage(CarbonImmutable::parse('2026-11-16'), CarbonImmutable::parse('2026-11-17'));
+
+    expect(array_keys($usage->days))->toBe(['2026-11-16', '2026-11-17'])
+        ->and($usage->days['2026-11-17']->generations)->toBe(5)
+        ->and($usage->days['2026-11-17']->cost->nanos)->toBe(71_320_000)
+        ->and($usage->days['2026-11-16']->cost->nanos)->toBe(0)
+        ->and($usage->total->cost->nanos)->toBe(71_320_000);
+
+    Http::assertSent(fn (Request $request): bool => $request->method() === 'GET'
+        && $request->url() === 'https://pixelforge.test/v1/usage?start_date=2026-11-16&end_date=2026-11-17'
+        && $request->hasHeader('Authorization', 'Bearer pf_test_not_a_real_key'));
+});
+
+it('rejects usage it cannot read', function (array $body): void {
+    Http::fake(['*/usage*' => Http::response($body)]);
+
+    pixelforge()->usage(CarbonImmutable::parse('2026-11-16'), CarbonImmutable::parse('2026-11-17'));
+})->with([
+    'no data' => [['total' => ['generations' => 0, 'cost_usd' => '0.000000000']]],
+    'a day without a date' => [['data' => [['generations' => 0, 'cost_usd' => '0']], 'total' => ['generations' => 0, 'cost_usd' => '0']]],
+    'a cost that is not a string' => [['data' => [], 'total' => ['generations' => 0, 'cost_usd' => 0.07]]],
+])->throws(PixelforgeException::class, 'unexpected response');

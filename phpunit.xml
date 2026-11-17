@@ -35,6 +35,7 @@
         <env name="PIXELFORGE_BASE_URL" value="https://pixelforge.test/v1" force="true"/>
         <env name="PIXELFORGE_API_KEY" value="pf_test_not_a_real_key" force="true"/>
         <env name="PIXELFORGE_WEBHOOK_SECRET" value="whsec_test_not_a_real_secret" force="true"/>
+        <env name="INERTIA_SSR_ENABLED" value="false"/>  <!-- the Vite dev server's SSR endpoint is not a test dependency -->
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

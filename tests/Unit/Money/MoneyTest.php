@@ -63,10 +63,12 @@ it('formats with 4 decimals by default', function (): void {
     expect(Money::nanos(467_343_750)->format())->toBe('$0.4673');
 });
 
-it('adds and multiplies without changing the original', function (): void {
+it('adds, subtracts and multiplies without changing the original', function (): void {
     $money = Money::nanos(10);
 
     expect($money->add(Money::nanos(5))->nanos)->toBe(15)
+        ->and($money->subtract(Money::nanos(4))->nanos)->toBe(6)
+        ->and($money->subtract(Money::nanos(15))->nanos)->toBe(-5)
         ->and($money->times(3)->nanos)->toBe(30)
         ->and($money->nanos)->toBe(10)
         ->and(Money::zero()->nanos)->toBe(0);

@@ -44,6 +44,11 @@ final readonly class Money
         return new self($this->nanos + $other->nanos);
     }
 
+    public function subtract(self $other): self
+    {
+        return new self($this->nanos - $other->nanos);
+    }
+
     public function times(int $factor): self
     {
         return new self($this->nanos * $factor);

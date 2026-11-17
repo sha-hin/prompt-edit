@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property int $user_id
+ * @property int|null $user_id null once the user deleted their account; the record is kept for the books
  * @property string $idempotency_key
  * @property string|null $pixelforge_id
  * @property string $prompt

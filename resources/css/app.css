@@ -8,10 +8,15 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* PromptEdit's studio typography (promptedit.com) */
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-display: 'Bricolage Grotesque', ui-serif, Georgia, serif;
+
+    --color-success: var(--success);
+    --color-accent-ink: var(--accent-ink);
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -61,75 +66,92 @@
     --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/*
+ * PromptEdit's studio palette (promptedit.com): warm off-white pages, white cards,
+ * near-black ink and a lime accent that carries dark text.
+ */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --background: #fbfaf9; /* studio page */
+    --foreground: #262626; /* studio ink */
+    --card: #ffffff;
+    --card-foreground: #262626;
+    --popover: #ffffff;
+    --popover-foreground: #262626;
+    --primary: #9ae600; /* studio accent (lime) */
+    --primary-foreground: #262626; /* dark text on lime */
+    --secondary: #f3f0ed; /* studio page-alt */
+    --secondary-foreground: #262626;
+    --muted: #f3f0ed;
+    --muted-foreground: #595959; /* studio secondary */
+    --accent: #f5f5f5; /* studio field hover */
+    --accent-foreground: #262626;
+    --accent-ink: #497d00; /* lime that reads as text on light backgrounds */
+    --success: #497d00;
+    --destructive: #dc2626; /* studio alert */
+    --destructive-foreground: #dc2626;
+    --border: #e5e5e5; /* studio hairline */
+    --input: #d4d4d4; /* studio subtle */
+    --ring: #497d00; /* studio focus */
+    --chart-1: #9ae600;
+    --chart-2: #0092b8;
+    --chart-3: #497d00;
+    --chart-4: #f59e0b;
+    --chart-5: #dc2626;
+    --radius: 0.5rem;
+    --sidebar: #f3f0ed;
+    --sidebar-foreground: #262626;
+    --sidebar-primary: #262626;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #2626260d; /* studio raised hover */
+    --sidebar-accent-foreground: #262626;
+    --sidebar-border: #e5e5e5;
+    --sidebar-ring: #497d00;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --background: #171717; /* studio page, dark */
+    --foreground: #ffffff;
+    --card: #262626;
+    --card-foreground: #ffffff;
+    --popover: #262626;
+    --popover-foreground: #ffffff;
+    --primary: #9ae600;
+    --primary-foreground: #262626;
+    --secondary: #1f1f1f;
+    --secondary-foreground: #ffffff;
+    --muted: #1f1f1f;
+    --muted-foreground: #ffffffcc;
+    --accent: #ffffff0d;
+    --accent-foreground: #ffffff;
+    --accent-ink: #9ae600;
+    --success: #9ae600;
+    --destructive: #f87171;
+    --destructive-foreground: #f87171;
+    --border: #ffffff1a;
+    --input: #454545;
+    --ring: #9ae600;
+    --chart-1: #9ae600;
+    --chart-2: #0092b8;
+    --chart-3: #7ccf00;
+    --chart-4: #f59e0b;
+    --chart-5: #f87171;
+    --sidebar: #1f1f1f;
+    --sidebar-foreground: #ffffff;
+    --sidebar-primary: #9ae600;
+    --sidebar-primary-foreground: #262626;
+    --sidebar-accent: #ffffff0d;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #ffffff1a;
+    --sidebar-ring: #9ae600;
+}
+
+/* Small uppercase labels, as in the studio (`.studio-label`); Roboto Mono is kept for figures. */
+@utility studio-label {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
 }
 
 @layer base {

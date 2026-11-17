@@ -4,6 +4,7 @@ namespace App\Pixelforge;
 
 use App\Generations\GenerationSpec;
 use App\Pricing\Rates;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
@@ -73,6 +74,19 @@ final readonly class PixelforgeClient
         }
 
         return Rates::fromPerMillion($rates);
+    }
+
+    /**
+     * What Pixelforge billed this key per UTC day, both dates inclusive (at most 92 days).
+     *
+     * @throws PixelforgeException|ConnectionException
+     */
+    public function usage(CarbonImmutable $start, CarbonImmutable $end): PixelforgeUsage
+    {
+        return PixelforgeUsage::fromResponse($this->json($this->request()->get('usage', [
+            'start_date' => $start->toDateString(),
+            'end_date' => $end->toDateString(),
+        ])));
     }
 
     private function request(): PendingRequest
