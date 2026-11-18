@@ -2,6 +2,14 @@
 
 Image generation on Pixelforge, with every generation billed at exactly what it cost plus a 25% markup. Built with Laravel 13, Inertia, Vue 3 and TypeScript.
 
+## Live app
+
+**https://prompt-edit-production-lhbern.laravel.cloud**
+
+- The login page lists the demo user and admin accounts, with a button that fills in the form. The admin sees the report under **Admin**.
+- New accounts start verified, with $10 of free credit. **Buy credits** adds more (a fake purchase).
+- Webhook endpoint: `https://prompt-edit-production-lhbern.laravel.cloud/webhooks/pixelforge`
+
 ## Setup with Docker
 
 Needs only Docker (or OrbStack). PHP, Composer, Node and MySQL all run in containers.
@@ -87,7 +95,7 @@ The live app runs on [Laravel Cloud](https://cloud.laravel.com), built straight 
     ```dotenv
     APP_ENV=production
     APP_DEBUG=false
-    APP_URL=https://<app>.laravel.cloud
+    APP_URL=https://prompt-edit-production-lhbern.laravel.cloud
     QUEUE_CONNECTION=database
     CACHE_STORE=database
     SESSION_DRIVER=database
@@ -98,7 +106,7 @@ The live app runs on [Laravel Cloud](https://cloud.laravel.com), built straight 
     PIXELFORGE_API_KEY=            # a key made only for production
     PIXELFORGE_WEBHOOK_SECRET=     # that key's signing secret
     ```
-9. **Pixelforge:** create a separate API key for production, so its `/v1/usage` holds only the live app's generations and the admin Overview matches it exactly. Set that key's webhook URL to `https://<app>.laravel.cloud/webhooks/pixelforge` and send a test event; it should get `200 {"received": true}`.
+9. **Pixelforge:** create a separate API key for production, so its `/v1/usage` holds only the live app's generations and the admin Overview matches it exactly. Set that key's webhook URL to `https://prompt-edit-production-lhbern.laravel.cloud/webhooks/pixelforge` and send a test event; it should get `200 {"received": true}`.
 
 ## Checks
 
